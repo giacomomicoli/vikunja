@@ -57,6 +57,7 @@ Example production values:
 
 - `VIKUNJA_PUBLIC_URL=https://vikunja.example.com/`
 - `VIKUNJA_DOMAIN=vikunja.example.com`
+- `VIKUNJA_IMAGE=vikunja/vikunja:2.2.2`
 - `VIKUNJA_SERVER_PATH=/path/to/vikunja`
 - `VIKUNJA_FILES_PATH=/path/to/vikunja/files`
 - `VIKUNJA_BACKUPS_PATH=/path/to/vikunja/backups`

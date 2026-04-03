@@ -1,6 +1,6 @@
 services:
   vikunja:
-    image: ${VIKUNJA_IMAGE:-vikunja/vikunja:${VIKUNJA_VERSION:-2.2.2}}
+    image: ${VIKUNJA_IMAGE}
     environment:
       HOME: /tmp
       XDG_CACHE_HOME: /tmp/.cache

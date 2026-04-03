@@ -25,12 +25,13 @@ This document describes how configuration is split between `.env`, Docker Swarm 
 - the deploy workflow locates that env file from the `DEPLOY_PATH` GitHub secret
 - `docker/deploy.sh` loads the server `.env`, validates required values, and creates external Swarm secrets
 - `docker/docker-compose.prod.yml` consumes those secrets with `*_FILE` variables
-- the deploy workflow writes the pinned `VIKUNJA_IMAGE` into a temporary env file on the server for each rollout
+- `VIKUNJA_IMAGE` stays in `.env` as the base image reference, and the deploy workflow overwrites it in a temporary env file on the server for each rollout
 
 ## Required Variables
 
 - `VIKUNJA_PUBLIC_URL`
 - `VIKUNJA_DOMAIN`
+- `VIKUNJA_IMAGE`
 - `VIKUNJA_SERVER_PATH`
 - `VIKUNJA_FILES_PATH`
 - `VIKUNJA_BACKUPS_PATH`
