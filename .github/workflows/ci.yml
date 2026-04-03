@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, release, main]
+  pull_request:
+    branches: [dev, release, main]
+
+jobs:
+  compose-config:
+    name: Validate Compose Configs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Render dev config
+        run: docker compose --project-name vikunja --env-file .env.example -f docker/docker-compose.yml -f docker/docker-compose.dev.yml config >/dev/null
+
+      - name: Render prod config
+        env:
+          VIKUNJA_IMAGE: ghcr.io/example/vikunja:test
+        run: docker compose --project-name vikunja --env-file .env.example -f docker/docker-compose.yml -f docker/docker-compose.prod.yml config >/dev/null
+
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Lint deploy script
+        run: shellcheck docker/deploy.sh

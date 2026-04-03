@@ -1,0 +1,26 @@
+services:
+  vikunja:
+    environment:
+      VIKUNJA_SERVICE_SECRET: ${VIKUNJA_SECRET}
+      VIKUNJA_DATABASE_PASSWORD: ${VIKUNJA_DB_PASSWORD}
+      VIKUNJA_MAILER_USERNAME: ${VIKUNJA_MAILER_USERNAME:-}
+      VIKUNJA_MAILER_PASSWORD: ${VIKUNJA_MAILER_PASSWORD:-}
+      VIKUNJA_LOG_LEVEL: DEBUG
+      VIKUNJA_LOG_DATABASE: stdout
+      VIKUNJA_LOG_MAIL: stdout
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: "true"
+    ports:
+      - "3456:3456"
+    volumes:
+      - ../files:/app/vikunja/files
+    depends_on:
+      vikunja-db:
+        condition: service_healthy
+
+  vikunja-db:
+    environment:
+      POSTGRES_PASSWORD: ${VIKUNJA_DB_PASSWORD}
+
+networks:
+  vikunja-net:
+    driver: bridge

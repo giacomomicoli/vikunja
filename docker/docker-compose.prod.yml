@@ -1,0 +1,94 @@
+services:
+  vikunja:
+    environment:
+      VIKUNJA_SERVICE_SECRET_FILE: /run/secrets/vikunja_service_secret
+      VIKUNJA_DATABASE_PASSWORD_FILE: /run/secrets/vikunja_db_password
+      VIKUNJA_MAILER_USERNAME_FILE: /run/secrets/vikunja_mailer_username
+      VIKUNJA_MAILER_PASSWORD_FILE: /run/secrets/vikunja_mailer_password
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: ${VIKUNJA_ENABLE_REGISTRATION:-false}
+      VIKUNJA_SERVICE_IPEXTRACTIONMETHOD: xff
+      VIKUNJA_SERVICE_TRUSTEDPROXIES: ${TRAEFIK_PROXY_CIDR:-192.0.2.0/24}
+      VIKUNJA_LOG_LEVEL: INFO
+      VIKUNJA_RATELIMIT_ENABLED: "true"
+      VIKUNJA_RATELIMIT_KIND: ip
+      VIKUNJA_RATELIMIT_PERIOD: "60"
+      VIKUNJA_RATELIMIT_LIMIT: "100"
+    volumes:
+      - ${VIKUNJA_FILES_PATH:-/srv/vikunja/files}:/app/vikunja/files
+    secrets:
+      - source: vikunja_service_secret
+        target: vikunja_service_secret
+      - source: vikunja_db_password
+        target: vikunja_db_password
+      - source: vikunja_mailer_username
+        target: vikunja_mailer_username
+      - source: vikunja_mailer_password
+        target: vikunja_mailer_password
+    networks:
+      - traefik-public
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 256M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=${TRAEFIK_PUBLIC_NETWORK:-traefik-public}"
+        - "traefik.http.routers.vikunja.entrypoints=https"
+        - "traefik.http.routers.vikunja.rule=Host(`${VIKUNJA_DOMAIN:-vikunja.example.com}`)"
+        - "traefik.http.routers.vikunja.tls.certresolver=http"
+        - "traefik.http.routers.vikunja.service=vikunja"
+        - "traefik.http.routers.vikunja.priority=1"
+        - "traefik.http.routers.vikunja.middlewares=vikunja-headers@swarm,vikunja-compress@swarm"
+        - "traefik.http.services.vikunja.loadbalancer.server.port=3456"
+        - "traefik.http.middlewares.vikunja-headers.headers.customresponseheaders.X-Content-Type-Options=nosniff"
+        - "traefik.http.middlewares.vikunja-headers.headers.customresponseheaders.X-Frame-Options=DENY"
+        - "traefik.http.middlewares.vikunja-headers.headers.customresponseheaders.Referrer-Policy=strict-origin-when-cross-origin"
+        - "traefik.http.middlewares.vikunja-compress.compress=true"
+
+  vikunja-db:
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/vikunja_db_password
+    secrets:
+      - source: vikunja_db_password
+        target: vikunja_db_password
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 512M
+
+secrets:
+  vikunja_service_secret:
+    external: true
+    name: ${VIKUNJA_SERVICE_SECRET_NAME:-vikunja_service_secret}
+  vikunja_db_password:
+    external: true
+    name: ${VIKUNJA_DB_PASSWORD_SECRET_NAME:-vikunja_db_password}
+  vikunja_mailer_username:
+    external: true
+    name: ${VIKUNJA_MAILER_USERNAME_SECRET_NAME:-vikunja_mailer_username}
+  vikunja_mailer_password:
+    external: true
+    name: ${VIKUNJA_MAILER_PASSWORD_SECRET_NAME:-vikunja_mailer_password}
+
+networks:
+  traefik-public:
+    external: true
+    name: ${TRAEFIK_PUBLIC_NETWORK:-traefik-public}

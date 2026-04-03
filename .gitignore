@@ -1,0 +1,7 @@
+.env
+TODO.md
+files/
+backups/
+config/config.yml
+*.sql.gz
+*.tar.gz

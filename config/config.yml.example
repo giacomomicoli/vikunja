@@ -1,0 +1,15 @@
+# Optional Vikunja config file.
+#
+# Keep the default deployment env-driven for now. Add a real config.yml only
+# when you need nested settings such as OpenID providers.
+
+auth:
+  openid:
+    enabled: false
+    providers:
+      # authentik:
+      #   name: Authentik
+      #   authurl: https://auth.example.com/application/o/vikunja/
+      #   clientid: change-me
+      #   clientsecret: change-me
+      #   scope: openid email profile

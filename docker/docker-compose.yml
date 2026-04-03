@@ -1,0 +1,52 @@
+services:
+  vikunja:
+    image: ${VIKUNJA_IMAGE:-vikunja/vikunja:${VIKUNJA_VERSION:-2.2.2}}
+    environment:
+      HOME: /tmp
+      XDG_CACHE_HOME: /tmp/.cache
+      VIKUNJA_SERVICE_PUBLICURL: ${VIKUNJA_PUBLIC_URL}
+      VIKUNJA_DATABASE_HOST: vikunja-db
+      VIKUNJA_DATABASE_TYPE: postgres
+      VIKUNJA_DATABASE_USER: vikunja
+      VIKUNJA_DATABASE_DATABASE: vikunja
+      VIKUNJA_DATABASE_SSLMODE: disable
+      VIKUNJA_FILES_BASEPATH: /app/vikunja/files
+      VIKUNJA_SERVICE_TIMEZONE: ${VIKUNJA_SERVICE_TIMEZONE:-UTC}
+      VIKUNJA_DEFAULTSETTINGS_LANGUAGE: ${VIKUNJA_DEFAULTSETTINGS_LANGUAGE:-en-US}
+      VIKUNJA_DEFAULTSETTINGS_WEEK_START: ${VIKUNJA_DEFAULTSETTINGS_WEEK_START:-1}
+      VIKUNJA_DEFAULTSETTINGS_TIMEZONE: ${VIKUNJA_DEFAULTSETTINGS_TIMEZONE:-UTC}
+      VIKUNJA_LOG_LEVEL: ${VIKUNJA_LOG_LEVEL:-INFO}
+      VIKUNJA_MAILER_ENABLED: ${VIKUNJA_MAILER_ENABLED:-false}
+      VIKUNJA_MAILER_HOST: ${VIKUNJA_MAILER_HOST:-}
+      VIKUNJA_MAILER_PORT: ${VIKUNJA_MAILER_PORT:-587}
+      VIKUNJA_MAILER_AUTHTYPE: ${VIKUNJA_MAILER_AUTHTYPE:-plain}
+      VIKUNJA_MAILER_FROMEMAIL: ${VIKUNJA_MAILER_FROMEMAIL:-vikunja@example.com}
+      VIKUNJA_SERVICE_ENABLECALDAV: "true"
+      VIKUNJA_SERVICE_ENABLEEMAILREMINDERS: "true"
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: ${VIKUNJA_ENABLE_REGISTRATION:-true}
+    networks:
+      - vikunja-net
+
+  vikunja-db:
+    image: postgres:${POSTGRES_VERSION:-16}
+    environment:
+      POSTGRES_USER: vikunja
+      POSTGRES_DB: vikunja
+    volumes:
+      - vikunja-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - vikunja-net
+
+volumes:
+  vikunja-db-data:
+
+networks:
+  vikunja-net:
+    driver: overlay
+    attachable: true

@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    name: Mirror Image and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive release variables
+        id: vars
+        run: |
+          echo "vikunja_version=$(grep '^VIKUNJA_VERSION=' .env.example | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
+          echo "ghcr_image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/vikunja" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mirror upstream Vikunja image to GHCR
+        run: |
+          docker buildx imagetools create \
+            --tag "${{ steps.vars.outputs.ghcr_image }}:latest" \
+            --tag "${{ steps.vars.outputs.ghcr_image }}:${{ steps.vars.outputs.vikunja_version }}" \
+            --tag "${{ steps.vars.outputs.ghcr_image }}:${GITHUB_SHA}" \
+            "vikunja/vikunja:${{ steps.vars.outputs.vikunja_version }}"
+
+      - name: Deploy to remote host
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: GITHUB_TOKEN,GHCR_USERNAME,VIKUNJA_IMAGE,DEPLOY_PATH
+          script: |
+            set -euo pipefail
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            cd "${DEPLOY_PATH:-/var/www/vikunja}"
+            git fetch origin main
+            git reset --hard origin/main
+            export VIKUNJA_IMAGE="$VIKUNJA_IMAGE"
+            bash docker/deploy.sh
+            docker stack services vikunja
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ${{ github.actor }}
+          VIKUNJA_IMAGE: ${{ steps.vars.outputs.ghcr_image }}:${{ github.sha }}
