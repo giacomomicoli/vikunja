@@ -58,7 +58,6 @@ There is no application build step and no unit-test framework in this repo. Vali
 - Backup db: `make backup-db`
 - Backup files: `make backup-files`
 - Backup both: `make backup-all`
-- Deploy to Swarm: `make prod-deploy`
 - Remove Swarm stack: `make prod-down`
 
 ### CI Validation

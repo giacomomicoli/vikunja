@@ -25,7 +25,7 @@ Vikunja stores operational data in PostgreSQL and the files mount. Recovery plan
 ## Production Backup Commands
 
 ```bash
-set -a && source .env && set +a
+set -a && source /path/to/your/server/.env && set +a
 mkdir -p "$VIKUNJA_BACKUPS_PATH"
 docker exec "$(docker ps -q -f label=com.docker.swarm.service.name=vikunja_vikunja-db)" \
   pg_dump -U vikunja vikunja | gzip > "$VIKUNJA_BACKUPS_PATH/vikunja_$(date +%Y%m%d_%H%M%S).sql.gz"
@@ -61,10 +61,10 @@ gunzip -c "$VIKUNJA_BACKUPS_PATH/vikunja_YYYYMMDD_HHMMSS.sql.gz" | \
 ## Rollback Runbook
 
 1. Identify a known-good GHCR tag, ideally a previous commit SHA tag from the deploy workflow.
-2. Export `VIKUNJA_IMAGE=ghcr.io/<owner>/vikunja:<known-good-tag>` in the deployment shell.
-3. Run `bash docker/deploy.sh`.
+2. Run the `Deploy` workflow with `workflow_dispatch` and set `image_tag=<known-good-tag>`.
+3. Confirm the workflow deploys `ghcr.io/<owner>/vikunja:<known-good-tag>`.
 4. Verify the stack, HTTPS routing, login, and attachments.
-5. Remove the temporary image override when you are ready to return to the default image selection.
+5. Push the next approved change to `main`, or run the workflow again with the desired current tag, when you are ready to return to the default image selection.
 
 ## Rollback Guardrails
 

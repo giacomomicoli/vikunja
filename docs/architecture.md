@@ -37,6 +37,7 @@ There is no custom application build in this repository. The repo owns configura
 - exposes Traefik labels through `deploy.labels`
 - publishes no direct host ports for Vikunja
 - injects secrets through Docker Swarm secrets and `*_FILE` variables
+- receives tracked deployment files from GitHub Actions instead of relying on a server-side git checkout
 
 ## Why The Base Compose File Stays Minimal
 
@@ -73,8 +74,9 @@ It intentionally does not contain ports, bind mounts, local-only startup orderin
 1. Validate the repo configuration locally.
 2. Push to `main`.
 3. GitHub Actions mirrors `vikunja/vikunja:${VIKUNJA_VERSION}` to `ghcr.io/<owner>/vikunja`.
-4. The deploy workflow exports `VIKUNJA_IMAGE=ghcr.io/<owner>/vikunja:${GITHUB_SHA}`.
-5. `docker/deploy.sh` deploys that pinned image to Swarm.
+4. The deploy workflow derives the remote deploy root from the `DEPLOY_PATH` secret and syncs the tracked deployment files to that directory.
+5. The deploy workflow writes `VIKUNJA_IMAGE=ghcr.io/<owner>/vikunja:${GITHUB_SHA}` into a temporary env file on the server.
+6. `docker/deploy.sh` deploys that pinned image to Swarm.
 
 ## Operational Constraints
 

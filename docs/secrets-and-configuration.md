@@ -22,16 +22,22 @@ This document describes how configuration is split between `.env`, Docker Swarm 
 ## Production Configuration
 
 - the production `.env` lives on the server and is never committed
-- `docker/deploy.sh` loads `.env`, validates required values, and creates external Swarm secrets
+- the deploy workflow locates that env file from the `DEPLOY_PATH` GitHub secret
+- `docker/deploy.sh` loads the server `.env`, validates required values, and creates external Swarm secrets
 - `docker/docker-compose.prod.yml` consumes those secrets with `*_FILE` variables
-- `VIKUNJA_IMAGE` can override the default image reference for CI/CD deploys or manual rollbacks
+- the deploy workflow writes the pinned `VIKUNJA_IMAGE` into a temporary env file on the server for each rollout
 
 ## Required Variables
 
 - `VIKUNJA_PUBLIC_URL`
 - `VIKUNJA_DOMAIN`
+- `VIKUNJA_SERVER_PATH`
+- `VIKUNJA_FILES_PATH`
+- `VIKUNJA_BACKUPS_PATH`
 - `VIKUNJA_SECRET`
 - `VIKUNJA_DB_PASSWORD`
+- `TRAEFIK_PUBLIC_NETWORK`
+- `TRAEFIK_PROXY_CIDR`
 
 ## Mailer Variables
 
@@ -72,6 +78,7 @@ If you add a real `config/config.yml`, keep it out of git and mount it to `/etc/
 
 - never commit `.env`
 - never commit `config/config.yml`
+- keep placeholder values from `.env.example` out of the server `.env`; `docker/deploy.sh` rejects known example values
 - if you use web signup for bootstrap, change `VIKUNJA_ENABLE_REGISTRATION` to `false` immediately after the first production user account exists
 - if you use CLI bootstrap, keep `VIKUNJA_ENABLE_REGISTRATION=false` from the start
 - keep docs in sync when env vars, secret names, or paths change

@@ -46,7 +46,8 @@ backup-files:
 backup-all: backup-db backup-files
 
 prod-deploy:
-	bash docker/deploy.sh
+	@printf '%s\n' 'Production deploys run via GitHub Actions only.'
+	@exit 1
 
 prod-down:
 	docker stack rm vikunja

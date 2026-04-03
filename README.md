@@ -1,14 +1,14 @@
 # Vikunja
 
-Deploy Vikunja locally with Docker Compose and remotely with Docker Swarm, using one repo for local validation, production deployment, and optional GitHub Actions automation.
+Deploy Vikunja locally with Docker Compose and remotely with Docker Swarm, using one repo for local validation, production deployment, and GitHub Actions automation.
 
 ## What This Repo Includes
 
 - a local Compose workflow at `http://localhost:3456/`
 - a production Swarm deployment with Traefik labels
-- a deploy script for remote rollouts
+- a deploy script used by the production workflow
 - CI validation for Compose config rendering and the deploy script
-- optional CD that mirrors the approved upstream image to GHCR and deploys it
+- CD that mirrors the approved upstream image to GHCR and deploys it
 
 ## Requirements
 
@@ -21,22 +21,23 @@ Remote:
 
 - Docker Swarm
 - an external Traefik network that your reverse proxy uses
-- a server checkout of this repo with a production `.env`
+- a production `.env` on the server
 
-Optional CI/CD:
+Production CI/CD:
 
 - a GitHub repository with Actions enabled
 - `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY` GitHub secrets
-- optional `DEPLOY_PATH` GitHub repository variable if the server checkout is not at the default path used by the workflow
+- `DEPLOY_PATH` GitHub secret pointing to the server `.env` path or its parent directory
 
 ## Local Setup
 
 1. Copy `.env.example` to `.env`.
 2. Replace the example secrets and any example values you want to customize.
-3. Run `make dev`.
-4. Open `http://localhost:3456/`.
-5. Register the first user account from the login page. Vikunja does not ship with default credentials.
-6. Verify CalDAV at `http://localhost:3456/dav/`.
+3. Set `VIKUNJA_ENABLE_REGISTRATION=true` in your local `.env` if you want to create the first account through the web UI.
+4. Run `make dev`.
+5. Open `http://localhost:3456/`.
+6. Register the first user account from the login page. Vikunja does not ship with default credentials.
+7. Verify CalDAV at `http://localhost:3456/dav/`.
 
 Useful local commands:
 
@@ -56,20 +57,23 @@ Example production values:
 
 - `VIKUNJA_PUBLIC_URL=https://vikunja.example.com/`
 - `VIKUNJA_DOMAIN=vikunja.example.com`
-- `VIKUNJA_SERVER_PATH=/srv/vikunja`
+- `VIKUNJA_SERVER_PATH=/path/to/vikunja`
+- `VIKUNJA_FILES_PATH=/path/to/vikunja/files`
+- `VIKUNJA_BACKUPS_PATH=/path/to/vikunja/backups`
 - `TRAEFIK_PUBLIC_NETWORK=traefik-public`
 - `TRAEFIK_PROXY_CIDR=<your-traefik-network-cidr>`
 
 Typical setup flow:
 
 1. Create your production `.env` from `.env.example` and replace the example values.
-2. Copy the repo to your server checkout path.
+2. Place that `.env` on the server in the directory you want GitHub Actions to manage.
 3. Ensure the public Traefik network exists on the Swarm host.
-4. Run `make prod-deploy` on the server.
-5. Create the first user account.
-6. Choose one bootstrap method:
-7. Option A: temporarily keep `VIKUNJA_ENABLE_REGISTRATION=true`, register the first user through the web UI, then set it to `false` and deploy again.
-8. Option B: keep registration disabled and create the first user from the Vikunja CLI inside the running container.
+4. Set the `DEPLOY_PATH` GitHub secret to that `.env` path or its parent directory.
+5. Push to `main` to trigger the first deploy.
+6. Create the first user account.
+7. Choose one bootstrap method:
+8. Option A: temporarily set `VIKUNJA_ENABLE_REGISTRATION=true` in the server `.env`, push to `main`, register the first user through the web UI, then set it back to `false` and push again.
+9. Option B: keep registration disabled and create the first user from the Vikunja CLI inside the running container.
 
 Example CLI bootstrap command:
 
@@ -82,7 +86,6 @@ If you omit `--password`, Vikunja prompts for it interactively.
 
 Useful production commands:
 
-- `make prod-deploy`
 - `make config-prod`
 - `docker stack services vikunja`
 - `docker stack ps vikunja`
@@ -90,11 +93,11 @@ Useful production commands:
 
 There are no default Vikunja credentials. The first login requires a user you register or create yourself.
 
-## Optional CI/CD
+## Production CI/CD
 
 - `.github/workflows/ci.yml` validates Compose rendering and lints `docker/deploy.sh`
-- `.github/workflows/deploy.yml` triggers on pushes to `main`
-- the deploy workflow mirrors the approved upstream image to GHCR and runs `bash docker/deploy.sh` on your server
+- `.github/workflows/deploy.yml` triggers on pushes to `main` and supports `workflow_dispatch` with an `image_tag` input for rollback or re-deploy
+- the deploy workflow mirrors the approved upstream image to GHCR, syncs the tracked deployment files to the server, and runs `bash docker/deploy.sh` against the server `.env`
 
 ## Maintainer Docs
 

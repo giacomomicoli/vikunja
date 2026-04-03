@@ -3,6 +3,12 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: GHCR tag to deploy instead of the current commit SHA
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -17,9 +23,41 @@ jobs:
 
       - name: Derive release variables
         id: vars
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          IMAGE_TAG_INPUT: ${{ github.event.inputs.image_tag }}
         run: |
-          echo "vikunja_version=$(grep '^VIKUNJA_VERSION=' .env.example | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
-          echo "ghcr_image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/vikunja" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          deploy_path="$DEPLOY_PATH"
+          deploy_tag="$GITHUB_SHA"
+
+          if [ -z "$deploy_path" ]; then
+            echo "DEPLOY_PATH secret is required." >&2
+            exit 1
+          fi
+
+          if [ -n "${IMAGE_TAG_INPUT:-}" ]; then
+            deploy_tag="$IMAGE_TAG_INPUT"
+          fi
+
+          case "$(basename "$deploy_path")" in
+            .env|.env.*)
+              deploy_root="$(dirname "$deploy_path")"
+              env_file="$deploy_path"
+              ;;
+            *)
+              deploy_root="$deploy_path"
+              env_file="$deploy_path/.env"
+              ;;
+          esac
+
+          {
+            echo "vikunja_version=$(grep '^VIKUNJA_VERSION=' .env.example | cut -d= -f2-)"
+            echo "ghcr_image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/vikunja"
+            echo "deploy_root=$deploy_root"
+            echo "env_file=$env_file"
+            echo "deploy_tag=$deploy_tag"
+          } >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -31,11 +69,35 @@ jobs:
 
       - name: Mirror upstream Vikunja image to GHCR
         run: |
+          set -euo pipefail
           docker buildx imagetools create \
             --tag "${{ steps.vars.outputs.ghcr_image }}:latest" \
             --tag "${{ steps.vars.outputs.ghcr_image }}:${{ steps.vars.outputs.vikunja_version }}" \
             --tag "${{ steps.vars.outputs.ghcr_image }}:${GITHUB_SHA}" \
             "vikunja/vikunja:${{ steps.vars.outputs.vikunja_version }}"
+
+      - name: Prepare remote deploy directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: DEPLOY_ROOT
+          script: |
+            set -euo pipefail
+            mkdir -p "$DEPLOY_ROOT"
+            rm -rf "$DEPLOY_ROOT/docker"
+        env:
+          DEPLOY_ROOT: ${{ steps.vars.outputs.deploy_root }}
+
+      - name: Sync deploy files to remote host
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker"
+          target: ${{ steps.vars.outputs.deploy_root }}
 
       - name: Deploy to remote host
         uses: appleboy/ssh-action@v1
@@ -43,18 +105,38 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GITHUB_TOKEN,GHCR_USERNAME,VIKUNJA_IMAGE,DEPLOY_PATH
+          envs: DEPLOY_ROOT,GITHUB_TOKEN,GHCR_USERNAME,VIKUNJA_ENV_FILE,VIKUNJA_IMAGE
           script: |
             set -euo pipefail
+            tmp_env="$DEPLOY_ROOT/.deploy.env"
+
+            cleanup() {
+              rm -f "$tmp_env"
+            }
+
+            trap cleanup EXIT
+
+            if [ ! -f "$VIKUNJA_ENV_FILE" ]; then
+              echo "Error: $VIKUNJA_ENV_FILE not found on the remote host." >&2
+              exit 1
+            fi
+
+            cp "$VIKUNJA_ENV_FILE" "$tmp_env"
+
+            if grep -q '^VIKUNJA_IMAGE=' "$tmp_env"; then
+              sed -i "s|^VIKUNJA_IMAGE=.*$|VIKUNJA_IMAGE=$VIKUNJA_IMAGE|" "$tmp_env"
+            else
+              printf '\nVIKUNJA_IMAGE=%s\n' "$VIKUNJA_IMAGE" >> "$tmp_env"
+            fi
+
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
-            cd "${DEPLOY_PATH:-/var/www/vikunja}"
-            git fetch origin main
-            git reset --hard origin/main
-            export VIKUNJA_IMAGE="$VIKUNJA_IMAGE"
+            cd "$DEPLOY_ROOT"
+            export VIKUNJA_ENV_FILE="$tmp_env"
             bash docker/deploy.sh
             docker stack services vikunja
         env:
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_ROOT: ${{ steps.vars.outputs.deploy_root }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USERNAME: ${{ github.actor }}
-          VIKUNJA_IMAGE: ${{ steps.vars.outputs.ghcr_image }}:${{ github.sha }}
+          VIKUNJA_ENV_FILE: ${{ steps.vars.outputs.env_file }}
+          VIKUNJA_IMAGE: ${{ steps.vars.outputs.ghcr_image }}:${{ steps.vars.outputs.deploy_tag }}

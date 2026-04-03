@@ -15,11 +15,12 @@ Local Compose is the validation surface for config changes before production pro
 
 1. Create `.env` from `.env.example`.
 2. Review at least `VIKUNJA_PUBLIC_URL`, `VIKUNJA_SECRET`, and `VIKUNJA_DB_PASSWORD`.
-3. Run `make dev`.
-4. Open `http://localhost:3456/`.
-5. Register the first user account from the login page. Vikunja has no default username or password.
-6. Verify CalDAV at `http://localhost:3456/dav/`.
-7. If SMTP is enabled locally, trigger a password reset to confirm mail delivery.
+3. Set `VIKUNJA_ENABLE_REGISTRATION=true` in the local `.env` if you want to create the first account through the web UI.
+4. Run `make dev`.
+5. Open `http://localhost:3456/`.
+6. Register the first user account from the login page. Vikunja has no default username or password.
+7. Verify CalDAV at `http://localhost:3456/dav/`.
+8. If SMTP is enabled locally, trigger a password reset to confirm mail delivery.
 
 ## What Local Mode Uses
 
