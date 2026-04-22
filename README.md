@@ -34,10 +34,11 @@ Production CI/CD:
 1. Copy `.env.example` to `.env`.
 2. Replace the example secrets and any example values you want to customize.
 3. Set `VIKUNJA_ENABLE_REGISTRATION=true` in your local `.env` if you want to create the first account through the web UI.
-4. Run `make dev`.
-5. Open `http://localhost:3456/`.
-6. Register the first user account from the login page. Vikunja does not ship with default credentials.
-7. Verify CalDAV at `http://localhost:3456/dav/`.
+4. Set `VIKUNJA_DEFAULTSETTINGS_EMAIL_REMINDERS_ENABLED=true` in `.env` if new users should receive task reminder emails by default.
+5. Run `make dev`.
+6. Open `http://localhost:3456/`.
+7. Register the first user account from the login page. Vikunja does not ship with default credentials.
+8. Verify CalDAV at `http://localhost:3456/dav/`.
 
 Useful local commands:
 
