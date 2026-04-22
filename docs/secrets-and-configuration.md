@@ -40,6 +40,15 @@ This document describes how configuration is split between `.env`, Docker Swarm 
 - `TRAEFIK_PUBLIC_NETWORK`
 - `TRAEFIK_PROXY_CIDR`
 
+## Default User Settings
+
+- `VIKUNJA_DEFAULTSETTINGS_LANGUAGE`
+- `VIKUNJA_DEFAULTSETTINGS_WEEK_START`
+- `VIKUNJA_DEFAULTSETTINGS_TIMEZONE`
+- `VIKUNJA_DEFAULTSETTINGS_EMAIL_REMINDERS_ENABLED`
+
+These values apply when a user is created. Changing them later only affects future users.
+
 ## Mailer Variables
 
 - `VIKUNJA_MAILER_ENABLED`
