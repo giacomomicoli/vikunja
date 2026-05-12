@@ -34,7 +34,9 @@ services:
         order: stop-first
       restart_policy:
         condition: on-failure
-        max_attempts: 3
+        delay: 15s
+        max_attempts: 10
+        window: 120s
       placement:
         constraints:
           - node.role == manager
