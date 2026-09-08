@@ -1,17 +1,19 @@
 # Current production
 
 Verified on 2026-09-08. DNS and application cutover completed on 2026-09-08.
-The old application is stopped; VM retirement is pending.
+The old VM and obsolete traefik.fakejack.dev DNS record were deleted after
+verification and explicit confirmation.
 
-## Retired application source
+## Historical source (VM deleted)
 
-- SSH alias: `vikunja-server`, user ubuntu, IP 83.228.225.233.
+- Historical SSH alias: `vikunja-server`, user ubuntu, IP 83.228.225.233.
+  Do not use this alias for live operations.
 - Hostname: `opencloud-server`.
 - `ssh opencloud` points to 91.99.20.92, an unrelated blog server.
 - Swarm service `vikunja_app`, image `vikunja/vikunja:2.3.0`.
 - SQLite: `/opt/stacks/vikunja/db/vikunja.db`, including live WAL.
 - Attachments: `/opt/stacks/vikunja/files`.
-- Source service scaled to zero before final snapshot; do not restart it.
+- Source was frozen before final snapshot, then the VM was deleted.
 - Public DNS now points to 84.234.30.76.
 - Registration disabled; SMTP and email reminders enabled.
 - This differs from the PostgreSQL 2.2.2 templates in this repository.
@@ -39,8 +41,13 @@ Local PostgreSQL development and configuration validation remain available.
 Legacy backup and restore commands using pg_dump do not back up live SQLite.
 Use the gateway runbook for consistent SQLite plus attachment snapshots.
 
-## Retirement
+## Retirement and recovery
 
-Do not remove the source until final integrity, HTTPS, DNS and MCP checks pass
-and a verified backup exists elsewhere. Never retire the unrelated opencloud
-alias or netdata-parent as part of this migration.
+Source VM 61ed946c-4fe3-46c4-91bc-6ea13d98780b was deleted on 2026-09-08.
+The shared opencloud_server keypair, netdata-parent, and unrelated opencloud
+host were preserved. Recovery to another VM requires a new host and backup.
+
+Final archive and integrity manifests are retained under
+`/opt/mcp-gateway/backups` on the gateway and
+`/home/jack/.local/share/mcp-gateway-backups` on the workstation.
+See the gateway runbook for checksums and the full migration evidence.
