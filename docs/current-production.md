@@ -1,8 +1,9 @@
 # Current production
 
-Verified on 2026-09-08. Migration is in progress, not yet cut over.
+Verified on 2026-09-08. DNS and application cutover completed on 2026-09-08.
+The old application is stopped; VM retirement is pending.
 
-## Source
+## Retired application source
 
 - SSH alias: `vikunja-server`, user ubuntu, IP 83.228.225.233.
 - Hostname: `opencloud-server`.
@@ -10,13 +11,16 @@ Verified on 2026-09-08. Migration is in progress, not yet cut over.
 - Swarm service `vikunja_app`, image `vikunja/vikunja:2.3.0`.
 - SQLite: `/opt/stacks/vikunja/db/vikunja.db`, including live WAL.
 - Attachments: `/opt/stacks/vikunja/files`.
-- Traefik handles `https://vikunja.fakejack.dev/`.
+- Source service scaled to zero before final snapshot; do not restart it.
+- Public DNS now points to 84.234.30.76.
 - Registration disabled; SMTP and email reminders enabled.
 - This differs from the PostgreSQL 2.2.2 templates in this repository.
 
 ## Target and authoritative operations
 
-Production configuration and migration scripts now belong to
+The live application runs on 84.234.30.76 (`ssh mcp-gateway`).
+Data is stored at `/opt/mcp-gateway/vikunja/{db,files}`.
+Production configuration and migration scripts belong to
 [mcp-gateway](https://github.com/giacomomicoli/mcp-gateway).
 Read its [migration runbook](https://github.com/giacomomicoli/mcp-gateway/blob/main/docs/vikunja-migration.md)
 and [ADR](https://github.com/giacomomicoli/mcp-gateway/blob/main/docs/decisions/001-cohost-vikunja.md).

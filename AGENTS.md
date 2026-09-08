@@ -2,7 +2,7 @@
 
 ## Production status
 
-The live SQLite deployment is migrating to the mcp-gateway repository.
+The live SQLite deployment is owned by the mcp-gateway repository.
 Read `docs/current-production.md` first. This repo's PostgreSQL/Swarm files
 are legacy templates; they are not evidence of the actual production topology.
 Deploy is manual-only and gated by `ENABLE_LEGACY_SWARM_DEPLOY=true`.

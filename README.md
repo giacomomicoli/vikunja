@@ -1,7 +1,7 @@
 # Vikunja
 
 This repository retains local Compose and legacy PostgreSQL/Swarm deployment
-templates. The live instance uses SQLite and is being migrated into
+templates. The live instance uses SQLite and is co-hosted in
 [mcp-gateway](https://github.com/giacomomicoli/mcp-gateway).
 See [verified production status](docs/current-production.md) before operating it.
 Pushing this repository no longer deploys production.
