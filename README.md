@@ -78,7 +78,7 @@ Typical setup flow:
 5. For a separate legacy installation only, enable repository variable `ENABLE_LEGACY_SWARM_DEPLOY=true` and run the Deploy workflow manually.
 6. Create the first user account.
 7. Choose one bootstrap method:
-8. Option A: temporarily set `VIKUNJA_ENABLE_REGISTRATION=true` in the server `.env`, push to `main`, register the first user through the web UI, then set it back to `false` and push again.
+8. Option A: temporarily set `VIKUNJA_ENABLE_REGISTRATION=true` in the server `.env`, run the opt-in Deploy workflow manually, register the first user through the web UI, then set it back to `false` and run the workflow again.
 9. Option B: keep registration disabled and create the first user from the Vikunja CLI inside the running container.
 
 Example CLI bootstrap command:
@@ -102,7 +102,7 @@ There are no default Vikunja credentials. The first login requires a user you re
 ## Production CI/CD
 
 - `.github/workflows/ci.yml` validates Compose rendering and lints `docker/deploy.sh`
-- `.github/workflows/deploy.yml` triggers on pushes to `main` and supports `workflow_dispatch` with an `image_tag` input for rollback or re-deploy
+- `.github/workflows/deploy.yml` supports only opt-in manual `workflow_dispatch` with an `image_tag` input for rollback or re-deploy
 - the deploy workflow mirrors the approved upstream image to GHCR, syncs the tracked deployment files to the server, and runs `bash docker/deploy.sh` against the server `.env`
 
 ## Maintainer Docs

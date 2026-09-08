@@ -55,7 +55,7 @@ This document covers the Swarm deployment path implemented by `docker/deploy.sh`
 2. Fill in production values and strong secrets.
 3. Confirm the external Traefik network exists.
 4. Store `DEPLOY_PATH` as a GitHub secret that points to the server `.env` file or its parent directory.
-5. Push to `main` or run the deploy workflow manually.
+5. Run the opt-in legacy Deploy workflow manually.
 
 ## First User Bootstrap
 
@@ -66,15 +66,15 @@ Choose one bootstrap path:
 ### Option A: Temporary Web Registration
 
 1. Set `VIKUNJA_ENABLE_REGISTRATION=true` in the production `.env`.
-2. Push to `main` or run the deploy workflow manually.
+2. Run the opt-in legacy Deploy workflow manually.
 3. Open the public URL and register the first user account.
 4. Set `VIKUNJA_ENABLE_REGISTRATION=false` in `.env`.
-5. Push to `main` or run the deploy workflow manually again.
+5. Run the opt-in legacy Deploy workflow manually again.
 
 ### Option B: CLI User Creation
 
 1. Set `VIKUNJA_ENABLE_REGISTRATION=false` in the production `.env`.
-2. Push to `main` or run the deploy workflow manually.
+2. Run the opt-in legacy Deploy workflow manually.
 3. Create the first user inside the running container:
 
 ```bash

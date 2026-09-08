@@ -68,7 +68,7 @@ gunzip -c "$VIKUNJA_BACKUPS_PATH/vikunja_YYYYMMDD_HHMMSS.sql.gz" | \
 2. Run the `Deploy` workflow with `workflow_dispatch` and set `image_tag=<known-good-tag>`.
 3. Confirm the workflow deploys `ghcr.io/<owner>/vikunja:<known-good-tag>`.
 4. Verify the stack, HTTPS routing, login, and attachments.
-5. Push the next approved change to `main`, or run the workflow again with the desired current tag, when you are ready to return to the default image selection.
+5. Run the opt-in legacy workflow again with the desired current tag, when you are ready to return to the default image selection.
 
 ## Rollback Guardrails
 

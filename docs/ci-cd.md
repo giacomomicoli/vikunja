@@ -53,7 +53,7 @@ Flow:
 9. Write `VIKUNJA_IMAGE=ghcr.io/<owner>/vikunja:<deploy-tag>` into a temporary env file next to the server `.env`.
 10. Run `bash docker/deploy.sh`.
 
-`<deploy-tag>` is `${GITHUB_SHA}` for push-triggered deploys, or the optional `image_tag` workflow input for rollback and re-deploy operations.
+`<deploy-tag>` is `${GITHUB_SHA}` for the selected workflow ref, or the optional `image_tag` workflow input for rollback and re-deploy operations.
 
 ## Required GitHub Secrets
 
@@ -66,7 +66,7 @@ Flow:
 
 ## Operational Notes
 
-- push-triggered production deploys are tied to the same repo commit that triggered the workflow
+- manual legacy deploys use the selected workflow ref
 - the deploy workflow does not rely on a server-side git checkout
 - the long-lived server `.env` stays on the host and is never copied back into the repo
 - rollbacks should be handled by running `workflow_dispatch` with the `image_tag` input set to a known-good GHCR tag
