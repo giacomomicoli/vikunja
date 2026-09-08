@@ -1,8 +1,12 @@
 # CI/CD
 
+> Scope: the PostgreSQL/Swarm configuration below is a legacy template, not the
+> verified live SQLite deployment. Read [current production](current-production.md)
+> before using these commands. Production migration is owned by mcp-gateway.
+
 ## Purpose
 
-This repo validates configuration changes on every active branch push and deploys production from `main`.
+This repo validates configuration changes on every active branch push and retains an opt-in manual legacy deployment.
 
 ## Relevant Files
 
@@ -33,8 +37,8 @@ Current CI scope:
 
 Trigger scope:
 
-- pushes to `main`
-- manual `workflow_dispatch` runs
+- manual `workflow_dispatch` runs only
+- requires repository variable `ENABLE_LEGACY_SWARM_DEPLOY=true`
 
 Flow:
 

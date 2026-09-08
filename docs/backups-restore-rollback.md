@@ -1,5 +1,9 @@
 # Backups, Restore, And Rollback
 
+> Scope: the PostgreSQL/Swarm configuration below is a legacy template, not the
+> verified live SQLite deployment. Read [current production](current-production.md)
+> before using these commands. Production migration is owned by mcp-gateway.
+
 ## Purpose
 
 Vikunja stores operational data in PostgreSQL and the files mount. Recovery planning needs both.

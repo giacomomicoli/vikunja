@@ -8,6 +8,8 @@ Each document should cover one area of the project and stay below `250` Markdown
 
 ## Start Here
 
+- [Current production](current-production.md) for verified live topology and migration ownership
+
 - `README.md` for the repo overview and quick start
 - `docs/architecture.md` for the deployment model and system boundaries
 - `docs/local-development.md` for local Compose usage and validation

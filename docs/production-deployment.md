@@ -1,5 +1,9 @@
 # Production Deployment
 
+> Scope: the PostgreSQL/Swarm configuration below is a legacy template, not the
+> verified live SQLite deployment. Read [current production](current-production.md)
+> before using these commands. Production migration is owned by mcp-gateway.
+
 ## Purpose
 
 This document covers the Swarm deployment path implemented by `docker/deploy.sh` and `.github/workflows/deploy.yml`.

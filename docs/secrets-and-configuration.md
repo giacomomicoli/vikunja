@@ -1,5 +1,9 @@
 # Secrets And Configuration
 
+> Scope: the PostgreSQL/Swarm configuration below is a legacy template, not the
+> verified live SQLite deployment. Read [current production](current-production.md)
+> before using these commands. Production migration is owned by mcp-gateway.
+
 ## Purpose
 
 This document describes how configuration is split between `.env`, Docker Swarm secrets, and the optional `config/config.yml`.

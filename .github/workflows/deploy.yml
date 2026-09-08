@@ -1,8 +1,6 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       image_tag:
@@ -16,6 +14,8 @@ permissions:
 
 jobs:
   deploy:
+    # Retained only for explicitly enabled legacy installations.
+    if: vars.ENABLE_LEGACY_SWARM_DEPLOY == 'true'
     name: Mirror Image and Deploy
     runs-on: ubuntu-latest
     steps:

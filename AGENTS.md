@@ -1,5 +1,12 @@
 # AGENTS.md
 
+## Production status
+
+The live SQLite deployment is migrating to the mcp-gateway repository.
+Read `docs/current-production.md` first. This repo's PostgreSQL/Swarm files
+are legacy templates; they are not evidence of the actual production topology.
+Deploy is manual-only and gated by `ENABLE_LEGACY_SWARM_DEPLOY=true`.
+
 ## Scope
 
 This repository manages Vikunja deployment config, CI/CD, docs, and operational scripts. It does not contain a custom application build.

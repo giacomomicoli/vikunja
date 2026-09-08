@@ -1,5 +1,9 @@
 # Architecture
 
+> Scope: the PostgreSQL/Swarm configuration below is a legacy template, not the
+> verified live SQLite deployment. Read [current production](current-production.md)
+> before using these commands. Production migration is owned by mcp-gateway.
+
 ## Purpose
 
 This repo deploys vendor-provided Vikunja with one shared configuration base across two runtimes:
@@ -72,7 +76,7 @@ It intentionally does not contain ports, bind mounts, local-only startup orderin
 ## Promotion Flow
 
 1. Validate the repo configuration locally.
-2. Push to `main`.
+2. For a separate legacy installation, enable `ENABLE_LEGACY_SWARM_DEPLOY=true` and manually run Deploy.
 3. GitHub Actions mirrors `vikunja/vikunja:${VIKUNJA_VERSION}` to `ghcr.io/<owner>/vikunja`.
 4. The deploy workflow derives the remote deploy root from the `DEPLOY_PATH` secret and syncs the tracked deployment files to that directory.
 5. The deploy workflow writes `VIKUNJA_IMAGE=ghcr.io/<owner>/vikunja:${GITHUB_SHA}` into a temporary env file on the server.

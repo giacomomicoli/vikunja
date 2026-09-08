@@ -1,6 +1,10 @@
 # Vikunja
 
-Deploy Vikunja locally with Docker Compose and remotely with Docker Swarm, using one repo for local validation, production deployment, and GitHub Actions automation.
+This repository retains local Compose and legacy PostgreSQL/Swarm deployment
+templates. The live instance uses SQLite and is being migrated into
+[mcp-gateway](https://github.com/giacomomicoli/mcp-gateway).
+See [verified production status](docs/current-production.md) before operating it.
+Pushing this repository no longer deploys production.
 
 ## What This Repo Includes
 
@@ -50,7 +54,7 @@ Useful local commands:
 - `make config-dev`
 - `make backup-all`
 
-## Remote Setup
+## Legacy Remote Setup
 
 The production deployment path uses Docker Swarm plus the settings in your server-side `.env`.
 
@@ -71,7 +75,7 @@ Typical setup flow:
 2. Place that `.env` on the server in the directory you want GitHub Actions to manage.
 3. Ensure the public Traefik network exists on the Swarm host.
 4. Set the `DEPLOY_PATH` GitHub secret to that `.env` path or its parent directory.
-5. Push to `main` to trigger the first deploy.
+5. For a separate legacy installation only, enable repository variable `ENABLE_LEGACY_SWARM_DEPLOY=true` and run the Deploy workflow manually.
 6. Create the first user account.
 7. Choose one bootstrap method:
 8. Option A: temporarily set `VIKUNJA_ENABLE_REGISTRATION=true` in the server `.env`, push to `main`, register the first user through the web UI, then set it back to `false` and push again.
